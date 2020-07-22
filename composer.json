@@ -1,0 +1,19 @@
+{
+  "require": {
+    "doctrine/dbal": "^2.5",
+    "elasticsearch/elasticsearch": "^5.5",
+    "guzzlehttp/guzzle": "^6.5",
+    "liangbincheng/kafka": "^1.0",
+    "monolog/monolog": "^1.25"
+  },
+  "autoload": {
+    "psr-4": {
+      "framework\\": "framework/",
+      "commons\\": "commons/",
+      "utils\\": "utils/",
+      "app\\": "app/"
+    },
+    "files": [
+    ]
+  }
+}

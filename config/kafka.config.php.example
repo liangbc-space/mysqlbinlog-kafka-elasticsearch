@@ -1,0 +1,7 @@
+<?php
+
+
+return [
+    'brokers' => 'centos7:9981',
+    'log_level' => LOG_DEBUG,
+];
