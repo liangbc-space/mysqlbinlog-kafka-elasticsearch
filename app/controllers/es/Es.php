@@ -79,12 +79,14 @@ class Es extends BaseTask
             }
         }
 
-        $res = GoodsBase::getDb()->bulk(['body' => $body]);
-        if ($res['errors']) {
-            foreach ($res['items'] as $item) {
-                foreach ($item as $value) {
-                    if (isset($value['error'])) {
-                        $this->getLogger($_SERVER['argv'][1])->info($item);
+        if ($body) {
+            $res = GoodsBase::getDb()->bulk(['body' => $body]);
+            if ($res['errors']) {
+                foreach ($res['items'] as $item) {
+                    foreach ($item as $value) {
+                        if (isset($value['error'])) {
+                            $this->getLogger($_SERVER['argv'][1])->info(json_encode($item, JSON_UNESCAPED_UNICODE));
+                        }
                     }
                 }
             }
@@ -111,12 +113,14 @@ class Es extends BaseTask
             $body[] = $goodsInfo;
         }
 
-        $res = GoodsBase::getDb()->bulk(['body' => $body]);
-        if ($res['errors']) {
-            foreach ($res['items'] as $item) {
-                foreach ($item as $value) {
-                    if (isset($value['error'])) {
-                        $this->getLogger($_SERVER['argv'][1])->info($item);
+        if ($body) {
+            $res = GoodsBase::getDb()->bulk(['body' => $body]);
+            if ($res['errors']) {
+                foreach ($res['items'] as $item) {
+                    foreach ($item as $value) {
+                        if (isset($value['error'])) {
+                            $this->getLogger($_SERVER['argv'][1])->info(json_encode($item, JSON_UNESCAPED_UNICODE));
+                        }
                     }
                 }
             }

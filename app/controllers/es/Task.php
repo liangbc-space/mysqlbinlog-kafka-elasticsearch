@@ -5,7 +5,6 @@ namespace app\controllers\es;
 
 
 use app\controllers\BaseTask;
-use app\models\elasticsearch\GoodsBase;
 use kafka\ConsumeConfig;
 use kafka\SeniorConsumer;
 use Monolog\Handler\StreamHandler;
@@ -49,11 +48,6 @@ class Task extends BaseTask
 
         $this->pcntlLoop(count($this->topicNames), function ($pid, $index) {
 
-            //  创建一个日志记录器
-            $logger = new Logger($_SERVER['argv'][1]);
-            $handler = new StreamHandler(LOG_PATH . 'binlog-kafka-consumer/' . date('Ymd') . '.log', Logger::INFO);
-            $logger->pushHandler($handler);
-
             $topicNames = array_values($this->topicNames);
             $topicName = $topicNames[--$index];
 
@@ -64,38 +58,16 @@ class Task extends BaseTask
             //  创建一个kafka消费者
             $consumer = $this->createConsumerInstance($topicName);
 
-            $goodsData = [];
-            try {
-                $consumer->consumer([$topicName], function (Message $message, KafkaConsumer $instance) use (&$goodsData, $tableHash, $logger) {
+            while (true) {
+                try {
+                    $this->consumer($consumer, [$topicName], $tableHash);
+                } catch (\Exception $e) {
+                    $this->getLogger($_SERVER['argv'][1])->info($e);
+                }
 
-                    if ($message->err) {
-                        $this->toEs($tableHash, $goodsData);
-                        return;
-                    }
-
-                    //  记录收到的订阅消息
-                    $logger->info($message->payload);
-                    //  处理消息
-                    $data = json_decode($message->payload, true);
-                    foreach ($data['data'] as $item) {
-                        $goodsData[] = [
-                            'goods_id' => $item['id'],
-                            'store_id' => $item['store_id'],
-                            'operation_type' => strtoupper($data['type']),
-                        ];
-                    }
-                    $instance->commitAsync($message);
-
-                    if (count($goodsData) >= $this->kafkaConsumeBatchNum) {
-                        $this->toEs($tableHash, $goodsData);
-                    }
-
-                });
-
-            } catch (\Exception $e) {
-                $this->getLogger($_SERVER['argv'][1])->info($e);
-                var_dump($e->getMessage());
+                sleep(2);
             }
+
         });
 
     }
@@ -157,16 +129,46 @@ class Task extends BaseTask
     }
 
 
-    public function test()
+    /**
+     * @param SeniorConsumer $consumer
+     * @param array $topicNames
+     * @param $tableHash
+     * @throws \RdKafka\Exception
+     */
+
+    private function consumer(SeniorConsumer $consumer, array $topicNames, $tableHash)
     {
+        //  创建一个日志记录器
+        $logger = new Logger($_SERVER['argv'][1]);
+        $handler = new StreamHandler(LOG_PATH . 'binlog-kafka-consumer/' . date('Ymd') . '.log', Logger::INFO);
+        $logger->pushHandler($handler);
 
-        try {
-            $res = GoodsBase::getDb()->indices();
-        } catch (\Exception $e) {
-            var_dump($e->getMessage());
-            die;
-        }
+        $goodsData = [];
+        $consumer->consumer($topicNames, function (Message $message, KafkaConsumer $instance) use (&$goodsData, $tableHash, $logger) {
 
+            if ($message->err) {
+                $this->toEs($tableHash, $goodsData);
+                return;
+            }
+
+            //  记录收到的订阅消息
+            $logger->info($message->payload);
+            //  处理消息
+            $data = json_decode($message->payload, true);
+            foreach ($data['data'] as $item) {
+                $goodsData[] = [
+                    'goods_id' => $item['id'],
+                    'store_id' => $item['store_id'],
+                    'operation_type' => strtoupper($data['type']),
+                ];
+            }
+            $instance->commitAsync($message);
+
+            if (count($goodsData) >= $this->kafkaConsumeBatchNum) {
+                $this->toEs($tableHash, $goodsData);
+            }
+
+        });
 
     }
 
