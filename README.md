@@ -32,7 +32,7 @@
 	
 * sysvshm共享内存扩展
 ```
-    1.  进入PHP源码安装包
+    1.  进入PHP源码安装包下的ext/sysvshm,如:/root/php-5.6.40/ext/sysvshm
     2.  phpize
     3.  ./configure --with-php-config=/usr/local/php/bin/php-config
     4.  make && make install
