@@ -51,7 +51,7 @@ class Task extends BaseTask
 
             //  创建一个日志记录器
             $logger = new Logger($_SERVER['argv'][1]);
-            $handler = new StreamHandler(LOG_PATH . 'binlog-kafka-consumer.log', Logger::INFO);
+            $handler = new StreamHandler(LOG_PATH . 'binlog-kafka-consumer/' . date('Ymd') . '.log', Logger::INFO);
             $logger->pushHandler($handler);
 
             $topicNames = array_values($this->topicNames);
