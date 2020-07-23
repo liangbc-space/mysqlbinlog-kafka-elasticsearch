@@ -32,7 +32,10 @@
 	
 * sysvshm共享内存扩展
 ```
-    pecl install sysvshm
+    1.  进入PHP源码安装包
+    2.  phpize
+    3.  ./configure --with-php-config=/usr/local/php/bin/php-config
+    4.  make && make install
  ```
 	
 * librdkafka库
