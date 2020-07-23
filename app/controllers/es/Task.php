@@ -5,6 +5,8 @@ namespace app\controllers\es;
 
 
 use app\controllers\BaseTask;
+use app\models\elasticsearch\GoodsBase;
+use commons\Commons;
 use kafka\ConsumeConfig;
 use kafka\SeniorConsumer;
 use Monolog\Handler\StreamHandler;
@@ -108,19 +110,51 @@ class Task extends BaseTask
 
         $this->pcntlLoop(count($tableHashes), function ($pid, $index) use ($tableHashes, $psize) {
             $tableHash = $tableHashes[--$index];
+            $tableName = 'z_goods_' . $tableHash;
 
             $page = 1;
             while (true) {
                 $offset = ($page++ - 1) * $psize;
 
-                $sql = "SELECT id FROM z_goods_{$tableHash} WHERE store_id > 0 ORDER BY id ASC LIMIT {$offset},{$psize}";
+                $sql = "SELECT id FROM {$tableName} WHERE store_id > 0 ORDER BY id ASC LIMIT {$offset},{$psize}";
                 if ($ids = self::$mysql->fetchAll($sql)) {
-                    $ids = array_column($ids, 'id');
+                    $ids = Commons::stringToInteger(array_column($ids, 'id'));
 
-                    $es = new Es($tableHash);
-                    $es->migrate($ids);
+                    //  获取es中是否已经存在数据
+                    $body = [
+                        'size' => $psize,
+                        '_source' => ['id'],
+                        'query' => [
+                            'bool' => [
+                                'filter' => [
+                                    [
+                                        'terms' => [
+                                            'id' => $ids
+                                        ],
+                                    ],
+                                    [
+                                        'term' => [
+                                            'mysql_table_name' => $tableName
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ];
+                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getIndex(), 'body' => $body]);
+                    $hits = array_column($result['hits']['hits'], '_source');
+                    $existsIds = array_column($hits, 'id');
 
-                    echo "成功同步{$psize}条数据" . PHP_EOL;
+                    if ($insertIds = array_diff($ids, $existsIds)) {
+                        $es = new Es($tableHash);
+                        $es->migrate($insertIds);
+
+                        echo "成功插入" . count($insertIds) . "条数据" . PHP_EOL;
+                    } else {
+                        echo "暂无数据需要插入" . PHP_EOL;
+                    }
+
+
                 } else
                     break;
             }
