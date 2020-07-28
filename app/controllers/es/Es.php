@@ -171,10 +171,9 @@ class Es extends BaseTask
             $goods['mysql_table_name'] = 'z_goods_' . $this->tableHash;
 
             if (isset($goods['user_group_id_values'])) {
-                if ($goods['user_group_id_values']) {
-                    $userGroupIdValues = explode(',', trim($goods['user_group_id_values'], ','));
-                    $goods['user_group_ids'] = array_unique($userGroupIdValues);
-                }
+                $userGroupIdValues = explode(',', trim($goods['user_group_id_values'], ','));
+                $goods['user_group_ids'] = array_unique($userGroupIdValues);
+
                 unset($goodsInfos[$key]['user_group_id_values']);
             }
 

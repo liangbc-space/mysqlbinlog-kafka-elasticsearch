@@ -2,6 +2,11 @@
 
 namespace framework;
 
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\DriverManager;
+
 defined('APP_PATH') or define('APP_PATH', ROOT_PATH . 'app/');
 
 defined('CONTROLLER_PATH') or define('CONTROLLER_PATH', APP_PATH . 'controllers/');
@@ -14,7 +19,7 @@ defined('DEBUG') or define('DEBUG', false);
 if (!DEBUG) {
     ini_set('error_reporting', E_ERROR);
 
-    ini_set('display_errors', 'Off');
+    //ini_set('display_errors', 'Off');
 }
 
 
@@ -29,7 +34,8 @@ class Cmder
 
         require ROOT_PATH . 'vendor/autoload.php';
 
-        Command::$mysql = DbalClient::getInstance();
+        $connOptions = require CONFIG_PATH . 'db.config.php';
+        Command::$mysql = self::initMYSQLConn($connOptions);
     }
 
 
@@ -105,6 +111,52 @@ class Cmder
         }
 
         return $args;
+    }
+
+
+    /**
+     * @param array $connOptions
+     * @return Connection|DbalConnection
+     * @throws DBALException
+     */
+
+    private static function initMYSQLConn(array $connOptions = [])
+    {
+
+        $charset = 'utf8';
+        if (isset($connOptions['charset']) && $connOptions['charset'])
+            $charset = $connOptions['charset'];
+
+        if (!isset($connOptions['db_host']) || !$connOptions['db_host'])
+            throw new \Exception('mysql连接信息有误【db_host】');
+
+        if (!isset($connOptions['db_port']) || !$connOptions['db_port'])
+            throw new \Exception('mysql连接信息有误【db_port】');
+
+        if (!isset($connOptions['db_username']) || !$connOptions['db_username'])
+            throw new \Exception('mysql连接信息有误【db_username】');
+
+        if (!isset($connOptions['db_password']) || !$connOptions['db_password'])
+            throw new \Exception('mysql连接信息有误【db_password】');
+
+        if (!isset($connOptions['db_name']) || !$connOptions['db_name'])
+            throw new \Exception('mysql连接信息有误【db_name】');
+
+        $connectionOptions = array(
+            'host' => $connOptions['db_host'],
+            'port' => $connOptions['db_port'],
+            'user' => $connOptions['db_username'],
+            'password' => $connOptions['db_password'],
+            'dbname' => $connOptions['db_name'],
+            'driver' => 'pdo_mysql',
+            'charset' => $charset,
+            'wrapperClass' => DbalConnection::class
+        );
+
+        $config = new Configuration();
+
+        return DriverManager::getConnection($connectionOptions, $config);
+
     }
 
 }

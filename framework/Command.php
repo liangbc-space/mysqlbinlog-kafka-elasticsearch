@@ -2,16 +2,14 @@
 
 namespace framework;
 
-use Doctrine\DBAL\Connection;
-
 class Command
 {
-    /** @var Connection $mysql */
-    static $mysql;
+    /** @var DbalConnection $mysql */
+    public static $mysql;
 
 
     /**
-     * @return Connection
+     * @return DbalConnection
      */
 
     final protected function getDb()

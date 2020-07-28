@@ -75,7 +75,6 @@ class DingTalk
         $url = self::$webHookUrl . "&timestamp={$timestamp}&sign={$sign}";
 
         try {
-            require_once APP_ROOT . 'libary/guzzle/vendor/autoload.php';
             $client = new Client([
                 'base_uri' => $url,
                 'timeout' => 3,
