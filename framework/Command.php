@@ -2,19 +2,24 @@
 
 namespace framework;
 
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Connection;
+
 class Command
 {
-    /** @var DbalConnection $mysql */
-    public static $mysql;
 
 
     /**
-     * @return DbalConnection
+     * @param string $connName
+     * @return Connection
      */
 
-    final protected function getDb()
+    final protected function getDb($connName = '')
     {
-        return self::$mysql;
+
+        $connName = $connName ? $connName : Application::$dbConnName;
+
+        return Manager::connection($connName);
     }
 
 

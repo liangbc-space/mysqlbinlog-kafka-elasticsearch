@@ -91,17 +91,16 @@ class Task extends BaseTask
             exit('当前脚本正在运行，请勿重复运行' . PHP_EOL);
 
         //  获取表hash值
-        $conn = clone $this->getDb();
-        $query = $conn->createQueryBuilder();
-        $query->select(['value'])->from('z_core_config')
+        $conn = clone($this->getDb());
+        $query = $conn->query();
+        $query->select(['value'])->from('core_config')
             //->where('name = :name')->setParameter('name', 'tbl_hash')
-            ->where('name = "tbl_hash"')
+            ->where('name', '=', 'tbl_hash')
             ->orderBy('id', 'desc');
 
-        $res = $query->execute()->fetchAll();
-        if (!$res)
+        $maxTableHash = $query->value('value');
+        if (!$maxTableHash)
             return false;
-        $maxTableHash = intval($res[0]['value']);
 
         $tableHashes = [];
         for ($i = 0; $i <= $maxTableHash; $i++) {
@@ -117,7 +116,8 @@ class Task extends BaseTask
                 $offset = ($page++ - 1) * $psize;
 
                 $sql = "SELECT id FROM {$tableName} WHERE store_id > 0 ORDER BY id ASC LIMIT {$offset},{$psize}";
-                if ($ids = $this->getDb()->fetchAll($sql)) {
+                if ($ids = $this->getDb()->select($sql)) {
+                    $ids = Commons::stdClassObject2Array($ids);
                     $ids = Commons::stringToInteger(array_column($ids, 'id'));
 
                     //  获取es中是否已经存在数据

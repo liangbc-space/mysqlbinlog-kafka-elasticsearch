@@ -1,10 +1,10 @@
 {
   "require": {
-    "doctrine/dbal": "^2.5",
     "elasticsearch/elasticsearch": "^5.5",
     "guzzlehttp/guzzle": "^6.5",
     "liangbincheng/kafka": "^1.0",
-    "monolog/monolog": "^1.25"
+    "monolog/monolog": "^1.25",
+    "illuminate/database": "^5.4"
   },
   "autoload": {
     "psr-4": {

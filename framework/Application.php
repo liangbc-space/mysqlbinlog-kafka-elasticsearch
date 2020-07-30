@@ -6,6 +6,7 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\DriverManager;
+use Illuminate\Database\Capsule\Manager;
 
 defined('APP_PATH') or define('APP_PATH', ROOT_PATH . 'app/');
 
@@ -23,8 +24,14 @@ if (!DEBUG) {
 }
 
 
-class Cmder
+class Application
 {
+
+    /** @var \ReflectionObject */
+    static $refObj;
+
+    /** @var string $dbConnName */
+    static $dbConnName;
 
     public function __construct()
     {
@@ -35,12 +42,9 @@ class Cmder
         require ROOT_PATH . 'vendor/autoload.php';
 
         $connOptions = require CONFIG_PATH . 'db.config.php';
-        Command::$mysql = self::initMYSQLConn($connOptions);
+        self::initMYSQLConn($connOptions);
     }
 
-
-    /** @var \ReflectionObject */
-    static $refObj;
 
     public function run()
     {
@@ -115,47 +119,36 @@ class Cmder
 
 
     /**
-     * @param array $connOptions
-     * @return Connection|DbalConnection
-     * @throws DBALException
+     * @param array $connConfig
      */
 
-    private static function initMYSQLConn(array $connOptions = [])
+    private static function initMYSQLConn(array $connConfig)
     {
 
-        $charset = 'utf8';
-        if (isset($connOptions['charset']) && $connOptions['charset'])
-            $charset = $connOptions['charset'];
+        self::$dbConnName = $connConfig['default'];
 
-        if (!isset($connOptions['db_host']) || !$connOptions['db_host'])
-            throw new \Exception('mysql连接信息有误【db_host】');
+        $manager = new Manager();
 
-        if (!isset($connOptions['db_port']) || !$connOptions['db_port'])
-            throw new \Exception('mysql连接信息有误【db_port】');
+        foreach ($connConfig['connections'] as $connName => $connOption) {
 
-        if (!isset($connOptions['db_username']) || !$connOptions['db_username'])
-            throw new \Exception('mysql连接信息有误【db_username】');
+            $manager->addConnection([
+                'driver' => 'mysql',
+                'host' => $connOption['db_host'],
+                'port' => $connOption['db_port'],
+                'username' => $connOption['db_username'],
+                'password' => $connOption['db_password'],
+                'database' => $connOption['db_name'],
+                'charset' => isset($connOption['charset']) ? $connOption['charset'] : 'utf8',
+                'collation' => 'utf8_unicode_ci',
+                'prefix' => isset($connOption['table_prefix']) ? $connOption['table_prefix'] : '',
+                'fetch' => isset($connOption['fetch']) ? $connOption['fetch'] : \PDO::FETCH_OBJ,
+            ], $connName);
 
-        if (!isset($connOptions['db_password']) || !$connOptions['db_password'])
-            throw new \Exception('mysql连接信息有误【db_password】');
+        }
 
-        if (!isset($connOptions['db_name']) || !$connOptions['db_name'])
-            throw new \Exception('mysql连接信息有误【db_name】');
+        $manager->setAsGlobal();
 
-        $connectionOptions = array(
-            'host' => $connOptions['db_host'],
-            'port' => $connOptions['db_port'],
-            'user' => $connOptions['db_username'],
-            'password' => $connOptions['db_password'],
-            'dbname' => $connOptions['db_name'],
-            'driver' => 'pdo_mysql',
-            'charset' => $charset,
-            'wrapperClass' => DbalConnection::class
-        );
-
-        $config = new Configuration();
-
-        return DriverManager::getConnection($connectionOptions, $config);
+        $manager->bootEloquent();
 
     }
 
