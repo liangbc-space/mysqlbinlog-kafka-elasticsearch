@@ -171,10 +171,9 @@ class Es extends BaseTask
             $goods['mysql_table_name'] = 'z_goods_' . $this->tableHash;
 
             if (isset($goods['user_group_id_values'])) {
-                if ($goods['user_group_id_values']) {
-                    $userGroupIdValues = explode(',', trim($goods['user_group_id_values'], ','));
-                    $goods['user_group_ids'] = array_unique($userGroupIdValues);
-                }
+                $userGroupIdValues = explode(',', trim($goods['user_group_id_values'], ','));
+                $goods['user_group_ids'] = array_unique($userGroupIdValues);
+
                 unset($goodsInfos[$key]['user_group_id_values']);
             }
 
@@ -277,7 +276,7 @@ WHERE
     AND g.store_id > 0
 	AND g.STATUS != -1";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
     private function goodsTags(array $goodsIds)
@@ -298,7 +297,7 @@ FROM
 WHERE
     r.goods_id in({$goodsIds})";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 
@@ -322,7 +321,7 @@ FROM
 WHERE
 	rr.goods_id IN ({$goodsIds})";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 
@@ -342,7 +341,7 @@ FROM
 WHERE
 	id IN ( {$categoryIds} ) ";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 
@@ -363,7 +362,7 @@ FROM
 WHERE
 	r.goods_id IN({$goodsIds})";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 
@@ -386,7 +385,7 @@ WHERE
 ORDER BY
 	listorder ASC";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 
@@ -409,7 +408,7 @@ WHERE
 	AND b.multi_image = 1
 ORDER BY
 	a.listorder ASC";
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 
@@ -431,7 +430,7 @@ WHERE
 	goods_id IN ( {$goodsIds} ) 
 	AND value_id != 0";
 
-        return $this->getDb()->fetchAll($sql);
+        return Commons::stdClassObject2Array($this->getDb()->select($sql));
     }
 
 

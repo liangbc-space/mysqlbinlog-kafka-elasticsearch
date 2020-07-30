@@ -2,21 +2,24 @@
 
 namespace framework;
 
-use Doctrine\DBAL\Connection;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Connection;
 
 class Command
 {
-    /** @var Connection $mysql */
-    static $mysql;
 
 
     /**
+     * @param string $connName
      * @return Connection
      */
 
-    final protected function getDb()
+    final protected function getDb($connName = '')
     {
-        return self::$mysql;
+
+        $connName = $connName ? $connName : Application::$dbConnName;
+
+        return Manager::connection($connName);
     }
 
 

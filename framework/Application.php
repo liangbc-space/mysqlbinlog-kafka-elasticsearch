@@ -2,6 +2,12 @@
 
 namespace framework;
 
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\DriverManager;
+use Illuminate\Database\Capsule\Manager;
+
 defined('APP_PATH') or define('APP_PATH', ROOT_PATH . 'app/');
 
 defined('CONTROLLER_PATH') or define('CONTROLLER_PATH', APP_PATH . 'controllers/');
@@ -14,12 +20,18 @@ defined('DEBUG') or define('DEBUG', false);
 if (!DEBUG) {
     ini_set('error_reporting', E_ERROR);
 
-    ini_set('display_errors', 'Off');
+    //ini_set('display_errors', 'Off');
 }
 
 
-class Cmder
+class Application
 {
+
+    /** @var \ReflectionObject */
+    static $refObj;
+
+    /** @var string $dbConnName */
+    static $dbConnName;
 
     public function __construct()
     {
@@ -29,12 +41,10 @@ class Cmder
 
         require ROOT_PATH . 'vendor/autoload.php';
 
-        Command::$mysql = DbalClient::getInstance();
+        $connOptions = require CONFIG_PATH . 'db.config.php';
+        self::initMYSQLConn($connOptions);
     }
 
-
-    /** @var \ReflectionObject */
-    static $refObj;
 
     public function run()
     {
@@ -105,6 +115,41 @@ class Cmder
         }
 
         return $args;
+    }
+
+
+    /**
+     * @param array $connConfig
+     */
+
+    private static function initMYSQLConn(array $connConfig)
+    {
+
+        self::$dbConnName = $connConfig['default'];
+
+        $manager = new Manager();
+
+        foreach ($connConfig['connections'] as $connName => $connOption) {
+
+            $manager->addConnection([
+                'driver' => 'mysql',
+                'host' => $connOption['db_host'],
+                'port' => $connOption['db_port'],
+                'username' => $connOption['db_username'],
+                'password' => $connOption['db_password'],
+                'database' => $connOption['db_name'],
+                'charset' => isset($connOption['charset']) ? $connOption['charset'] : 'utf8',
+                'collation' => 'utf8_unicode_ci',
+                'prefix' => isset($connOption['table_prefix']) ? $connOption['table_prefix'] : '',
+                'fetch' => isset($connOption['fetch']) ? $connOption['fetch'] : \PDO::FETCH_OBJ,
+            ], $connName);
+
+        }
+
+        $manager->setAsGlobal();
+
+        $manager->bootEloquent();
+
     }
 
 }

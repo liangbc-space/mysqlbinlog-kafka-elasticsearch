@@ -28,12 +28,12 @@ class ElasticsearchClient
     }
 
 
-    public function setRetries($retries = 3)
+    public static function setRetries($retries = 3)
     {
         self::$retries = $retries;
     }
 
-    public function setConnectionPoolModel($namespace = '\Elasticsearch\ConnectionPool\StaticNoPingConnectionPool')
+    public static function setConnectionPoolModel($namespace = '\Elasticsearch\ConnectionPool\StaticNoPingConnectionPool')
     {
         self::$connectionPoolModel = $namespace;
     }

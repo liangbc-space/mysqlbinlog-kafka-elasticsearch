@@ -25,8 +25,8 @@ define('DEBUG', true);
 
 if (!isset($_SERVER['argv'][1])) exit('错误，请填写正确的类名' . PHP_EOL);
 
-require_once(ROOT_PATH . 'framework/Cmder.php');
+require_once(ROOT_PATH . 'framework/Application.php');
 
 
-$cmd = new \framework\Cmder();
+$cmd = new \framework\Application();
 $cmd->run();
