@@ -26,6 +26,58 @@ class Task extends BaseTask
     private $kafkaConsumeBatchNum = 500;
 
 
+    public function test()
+    {
+        $psize = 1000;
+        $page = 1;
+        while (true) {
+            $offset = ($page++ - 1) * $psize;
+            $ids = $this->getDb()->table('goods_00')->select(['id'])
+                ->where('store_id', '>', 0)
+                ->orderBy('id', 'asc')->offset($offset)->limit($psize)
+                ->pluck('id')->toArray();
+
+            if (!$ids)
+                break;
+
+            //  获取es中是否已经存在数据
+            $body = [
+                'size' => $psize,
+                '_source' => ['id'],
+                'query' => [
+                    'bool' => [
+                        'filter' => [
+                            [
+                                'terms' => [
+                                    'id' => $ids
+                                ],
+                            ],
+                            [
+                                'term' => [
+                                    'mysql_table_name' => 'z_goods_00'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+            $result = GoodsBase::getDb()->search(['index' => GoodsBase::getAlias(), 'body' => $body]);
+            $hits = array_column($result['hits']['hits'], '_source');
+            $esIds = array_column($hits, 'id');
+
+            if ($diffIds = array_diff($ids, $esIds)) {
+                echo '【es中不存在的商品ID】：' . json_encode($diffIds, true) . PHP_EOL;
+            }
+
+            if ($diffIds = array_diff($esIds, $ids)) {
+                echo '【mysql中不存在的商品ID】：' . json_encode($diffIds, true) . PHP_EOL;
+            }
+
+
+        }
+    }
+
+
     /**
      *
      * 消费binlog监听kafka队列，同步数据到es
@@ -141,7 +193,7 @@ class Task extends BaseTask
                             ]
                         ]
                     ];
-                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getIndex(), 'body' => $body]);
+                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getAlias(), 'body' => $body]);
                     $hits = array_column($result['hits']['hits'], '_source');
                     $existsIds = array_column($hits, 'id');
 

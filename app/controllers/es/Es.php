@@ -61,7 +61,7 @@ class Es extends BaseTask
             if ($item['operation_type'] == 'DELETE') {
                 $body[] = [
                     'delete' => [
-                        '_index' => GoodsBase::getIndex(),
+                        '_index' => GoodsBase::getAlias(),
                         '_id' => $uniqueId,
                     ]
                 ];
@@ -69,7 +69,7 @@ class Es extends BaseTask
                 if (isset($goodsInfos[$uniqueId]) && $goodsInfo = $goodsInfos[$uniqueId]) {
                     $body[] = [
                         'index' => [
-                            '_index' => GoodsBase::getIndex(),
+                            '_index' => GoodsBase::getAlias(),
                             '_id' => $uniqueId,
                         ]
                     ];
@@ -105,7 +105,7 @@ class Es extends BaseTask
 
             $body[] = [
                 'create' => [
-                    '_index' => GoodsBase::getIndex(),
+                    '_index' => GoodsBase::getAlias(),
                     '_id' => $goodsInfo['uniqueeid'],
                 ]
             ];
@@ -239,8 +239,8 @@ class Es extends BaseTask
                 if ($goodsId == $prop['goods_id']) {
                     $goods['property_ids'][] = $prop['value_id'];
 
-                    $goods['prop_ids_' . $prop['property_id']] = $prop['value_id'];
-                    $goods['prop_names_' . $prop['property_id']] = $prop['value_name'];
+                    $goods['prop_ids_' . $prop['property_id']][] = intval($prop['value_id']);
+                    $goods['prop_names_' . $prop['property_id']][] = $prop['value_name'];
                 }
             }
 
