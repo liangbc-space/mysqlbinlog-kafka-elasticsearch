@@ -11,9 +11,17 @@ class GoodsBase extends ElasticsearchModel
 
     protected static $index = 'ymcart_goods_base';
 
+    protected static $alias = 'alias_goods_base';
+
+
     public static function getIndex()
     {
         return self::$index;
+    }
+
+    public static function getAlias()
+    {
+        return self::$alias;
     }
 
     public static function _id($storeId, $goodsId)

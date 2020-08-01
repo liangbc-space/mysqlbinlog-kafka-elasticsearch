@@ -15,6 +15,9 @@ abstract class ElasticsearchModel
     /** @var string es中index的名称或index前缀名称 */
     protected static $index;
 
+    /** @var string es中index绑定的别名名称，注意合理使用alias和index进行操作 */
+    protected static $alias;
+
 
     protected function __construct()
     {
@@ -46,5 +49,15 @@ abstract class ElasticsearchModel
      */
 
     abstract static function getIndex();
+
+
+    /**
+     *
+     * 获取alias
+     *
+     * @return mixed
+     */
+
+    abstract static function getAlias();
 
 }
