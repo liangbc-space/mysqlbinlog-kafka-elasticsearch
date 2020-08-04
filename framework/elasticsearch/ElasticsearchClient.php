@@ -13,9 +13,6 @@ use Elasticsearch\ClientBuilder;
 class ElasticsearchClient
 {
 
-    /** @var array */
-    private static $connOption;
-
     /** @var Client */
     private static $client;
 
