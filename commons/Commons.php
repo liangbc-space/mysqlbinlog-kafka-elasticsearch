@@ -45,7 +45,7 @@ class Commons
      * @return array
      */
 
-    public static function stdClassObject2Array($input)
+    public static function object2Array($input)
     {
         if (!is_object($input) && !is_array($input))
             return $input;
@@ -54,7 +54,7 @@ class Commons
 
         return array_map(function ($item) {
 
-            return (is_object($item) || is_array($item)) ? self::stdClassObject2Array($item) : $item;
+            return (is_object($item) || is_array($item)) ? self::object2Array($item) : $item;
 
         }, $input);
 

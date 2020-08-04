@@ -175,7 +175,7 @@ class Task extends BaseTask
 
                 $sql = "SELECT id FROM {$tableName} WHERE store_id > 0 ORDER BY id ASC LIMIT {$offset},{$psize}";
                 if ($ids = $this->getDb()->select($sql)) {
-                    $ids = Commons::stdClassObject2Array($ids);
+                    $ids = Commons::object2Array($ids);
                     $ids = Commons::stringToInteger(array_column($ids, 'id'));
 
                     //  获取es中是否已经存在数据
@@ -255,7 +255,9 @@ class Task extends BaseTask
             }
 
             if ($message->err || count($goodsData) >= $this->kafkaConsumeBatchNum) {
+                $st = Commons::getMsecTimestamp();
                 $this->toEs($tableHash, $goodsData);
+
             }
 
         });
@@ -266,10 +268,11 @@ class Task extends BaseTask
     private function toEs($tableHash, array &$goodsData)
     {
         if ($goodsData) {
+            $timestamp = Commons::getMsecTimestamp();
             $es = new Es($tableHash);
             $es->run($goodsData);
 
-            echo '【' . $tableHash . '】成功同步' . count($goodsData) . '条数据' . PHP_EOL;
+            echo '【' . $tableHash . '】成功同步' . count($goodsData) . '条数据；耗时【' . (Commons::getMsecTimestamp() - $timestamp) . '】毫秒' . PHP_EOL;
 
             $goodsData = [];
             if ($this->offsetCommitInstance && $this->offsetCommitInstance instanceof KafkaConsumer) {
@@ -289,7 +292,10 @@ class Task extends BaseTask
     {
         $kafkaConnOptions = require CONFIG_PATH . 'kafka.config.php';
         $consumerConfig = new ConsumeConfig($kafkaConnOptions['brokers']);
-        $consumerConfig->consumeTimeout = 2 * 1000; #消费超时时间
+        //  消费超时时间
+        $consumerConfig->consumeTimeout = 300;
+        //  输出调试信息
+        //$consumerConfig->debug = true;
 
         $consumer = new SeniorConsumer($consumerConfig);
 

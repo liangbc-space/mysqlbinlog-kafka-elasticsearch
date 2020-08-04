@@ -2,9 +2,9 @@
   "require": {
     "elasticsearch/elasticsearch": "^5.5",
     "guzzlehttp/guzzle": "^6.5",
-    "liangbincheng/kafka": "^1.0",
     "monolog/monolog": "^1.25",
-    "illuminate/database": "^5.4"
+    "illuminate/database": "^5.4",
+    "liangbc/kafka": "^1.1"
   },
   "autoload": {
     "psr-4": {
