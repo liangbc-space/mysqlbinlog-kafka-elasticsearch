@@ -1,6 +1,6 @@
 <?php
 
-namespace framework;
+namespace framework\elasticsearch;
 
 use Elasticsearch\Client;
 use Elasticsearch\ClientBuilder;

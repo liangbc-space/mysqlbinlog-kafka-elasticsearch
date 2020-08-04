@@ -25,6 +25,9 @@ class Task extends BaseTask
 
     private $kafkaConsumeBatchNum = 500;
 
+    /** @var KafkaConsumer|null $offsetCommitInstance */
+    private $offsetCommitInstance = null;
+
 
     public function test()
     {
@@ -92,7 +95,10 @@ class Task extends BaseTask
         if (!$lock->createLock())
             exit('当前脚本正在运行，请勿重复运行' . PHP_EOL);
 
-        $batchNum && $this->kafkaConsumeBatchNum = $batchNum;
+        $batchNum = intval($batchNum);
+        if ($batchNum <= 0)
+            exit('批量条数必须是正整数' . PHP_EOL);
+        $this->kafkaConsumeBatchNum = $batchNum;
 
         //  设置进程名称
         cli_set_process_title('task-mysql-binlog-canal-toEs');
@@ -232,25 +238,23 @@ class Task extends BaseTask
         $goodsData = [];
         $consumer->consumer($topicNames, function (Message $message, KafkaConsumer $instance) use (&$goodsData, $tableHash, $logger) {
 
-            if ($message->err) {
-                $this->toEs($tableHash, $goodsData);
-                return;
+            if (!$message->err) {
+                $this->offsetCommitInstance = $instance;
+
+                //  记录收到的订阅消息
+                //$logger->info($message->payload);
+                //  处理消息
+                $data = json_decode($message->payload, true);
+                foreach ($data['data'] as $item) {
+                    $goodsData[] = [
+                        'goods_id' => $item['id'],
+                        'store_id' => $item['store_id'],
+                        'operation_type' => strtoupper($data['type']),
+                    ];
+                }
             }
 
-            //  记录收到的订阅消息
-            $logger->info($message->payload);
-            //  处理消息
-            $data = json_decode($message->payload, true);
-            foreach ($data['data'] as $item) {
-                $goodsData[] = [
-                    'goods_id' => $item['id'],
-                    'store_id' => $item['store_id'],
-                    'operation_type' => strtoupper($data['type']),
-                ];
-            }
-            $instance->commitAsync($message);
-
-            if (count($goodsData) >= $this->kafkaConsumeBatchNum) {
+            if ($message->err || count($goodsData) >= $this->kafkaConsumeBatchNum) {
                 $this->toEs($tableHash, $goodsData);
             }
 
@@ -268,6 +272,12 @@ class Task extends BaseTask
             echo '【' . $tableHash . '】成功同步' . count($goodsData) . '条数据' . PHP_EOL;
 
             $goodsData = [];
+            if ($this->offsetCommitInstance && $this->offsetCommitInstance instanceof KafkaConsumer) {
+                //  提交偏移量
+                $this->offsetCommitInstance->commit();
+
+                $this->offsetCommitInstance = null;
+            }
 
             //sleep(0.5);
         }
@@ -279,12 +289,13 @@ class Task extends BaseTask
     {
         $kafkaConnOptions = require CONFIG_PATH . 'kafka.config.php';
         $consumerConfig = new ConsumeConfig($kafkaConnOptions['brokers']);
-        $consumerConfig->consumeTimeout = 3 * 1000;
+        $consumerConfig->consumeTimeout = 2 * 1000; #消费超时时间
 
         $consumer = new SeniorConsumer($consumerConfig);
 
-        $consumer->autoCommit = true;
-        $consumer->autoCommitIntervalMs = 10 * 1000;
+        //  手动提交偏移量
+        $consumer->autoCommit = false;
+        //$consumer->autoCommitIntervalMs = 10 * 1000;
 
         $consumer->getInstance('task-mysql-canal-es' . $index);
 

@@ -4,7 +4,7 @@ namespace app\models\elasticsearch;
 
 
 use commons\Commons;
-use framework\ElasticsearchModel;
+use framework\elasticsearch\ElasticsearchModel;
 
 class GoodsBase extends ElasticsearchModel
 {
