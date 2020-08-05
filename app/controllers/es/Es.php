@@ -134,11 +134,12 @@ class Es extends BaseTask
         $goodsInfos = $this->goodsBaseLists($goodsIds);
 
         $goodsIds = array_filter(array_unique(array_column($goodsInfos, 'id')));
+        $storeIds = array_filter(array_unique(array_column($goodsInfos, 'store_id')));
         //  获取商品tag信息
-        $tags = $this->goodsTags($goodsIds);
+        $tags = $this->goodsTags($goodsIds, $storeIds);
 
         //  获取商品推荐信息
-        $recommends = $this->goodsRecommends($goodsIds);
+        $recommends = $this->goodsRecommends($goodsIds, $storeIds);
 
         //  获取商品分类信息
         $categoryIds = [];
@@ -150,21 +151,21 @@ class Es extends BaseTask
         $categories = array_combine(array_column($categories, 'goods_category_id'), $categories);
 
         //  获取商品附属分类信息
-        $categoriesRel = $this->goodsCategoriesRel($goodsIds);
+        $categoriesRel = $this->goodsCategoriesRel($goodsIds, $storeIds);
         $categoriesNew = [];
         foreach ($categoriesRel as $item) {
             $categoriesNew[$item['goods_id']][] = $item;
         }
 
         //  获取商品图片信息
-        $otherImages = $this->goodsOtherImages($goodsIds);
+        $otherImages = $this->goodsOtherImages($goodsIds, $storeIds);
         $otherImages = array_combine(array_column($otherImages, 'goods_id'), $otherImages);
 
         //  获取商品销量属性信息
-        $saleProps = $this->goodsSaleProp($goodsIds);
+        $saleProps = $this->goodsSaleProp($goodsIds, $storeIds);
 
         //  获取商品属性信息
-        $props = $this->goodsProps($goodsIds);
+        $props = $this->goodsProps($goodsIds, $storeIds);
 
 
         foreach ($goodsInfos as $key => &$goods) {
@@ -279,11 +280,16 @@ WHERE
         return Commons::object2Array($this->getDb()->select($sql));
     }
 
-    private function goodsTags(array $goodsIds)
+    private function goodsTags(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
         $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
         if (!$goodsIds)
+            return [];
+
+        $storeIds = array_unique($storeIds);
+        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        if (!$storeIds)
             return [];
 
         $sql = "
@@ -295,17 +301,22 @@ FROM
 	z_goods_tag AS t
 	LEFT JOIN z_goods_tag_rel AS r ON t.id = r.tag_id 
 WHERE
-    r.goods_id in({$goodsIds})";
+    r.goods_id in({$goodsIds}) and r.store_id in({$storeIds})";
 
         return Commons::object2Array($this->getDb()->select($sql));
     }
 
 
-    private function goodsRecommends(array $goodsIds)
+    private function goodsRecommends(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
         $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
         if (!$goodsIds)
+            return [];
+
+        $storeIds = array_unique($storeIds);
+        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        if (!$storeIds)
             return [];
 
         $sql = "
@@ -319,7 +330,7 @@ FROM
 	z_goods_recommend AS r
 	LEFT JOIN z_goods_recommend_rel AS rr ON r.id = rr.goods_recommend_id 
 WHERE
-	rr.goods_id IN ({$goodsIds})";
+	rr.goods_id IN ({$goodsIds}) and rr.store_id in({$storeIds})";
 
         return Commons::object2Array($this->getDb()->select($sql));
     }
@@ -345,11 +356,16 @@ WHERE
     }
 
 
-    private function goodsCategoriesRel(array $goodsIds)
+    private function goodsCategoriesRel(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
         $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
         if (!$goodsIds)
+            return [];
+
+        $storeIds = array_unique($storeIds);
+        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        if (!$storeIds)
             return [];
 
         $sql = "SELECT
@@ -360,17 +376,22 @@ FROM
 	z_goods_category_{$this->tableHash} c
 	LEFT JOIN z_goods_category_rel_{$this->tableHash} r ON c.id = r.category_id 
 WHERE
-	r.goods_id IN({$goodsIds})";
+	r.goods_id IN({$goodsIds}) and r.store_id in({$storeIds})";
 
         return Commons::object2Array($this->getDb()->select($sql));
     }
 
 
-    private function goodsOtherImages(array $goodsIds)
+    private function goodsOtherImages(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
         $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
         if (!$goodsIds)
+            return [];
+
+        $storeIds = array_unique($storeIds);
+        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        if (!$storeIds)
             return [];
 
         $sql = "SELECT
@@ -380,6 +401,7 @@ FROM
 	z_image_{$this->tableHash} 
 WHERE
 	goods_id IN ( {$goodsIds} ) 
+	AND store_id IN ( {$storeIds} ) 
 	AND category = 'goods' 
 	AND obj_id = 0 
 ORDER BY
@@ -389,11 +411,16 @@ ORDER BY
     }
 
 
-    private function goodsSaleProp(array $goodsIds)
+    private function goodsSaleProp(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
         $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
         if (!$goodsIds)
+            return [];
+
+        $storeIds = array_unique($storeIds);
+        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        if (!$storeIds)
             return [];
 
         $sql = "SELECT
@@ -405,6 +432,7 @@ FROM
 	LEFT JOIN z_goods_sale_prop_{$this->tableHash} b ON a.parent_id = b.id 
 WHERE
 	b.goods_id IN ( {$goodsIds} ) 
+	AND b.store_id IN ({$storeIds}) 
 	AND b.multi_image = 1
 ORDER BY
 	a.listorder ASC";
@@ -412,11 +440,16 @@ ORDER BY
     }
 
 
-    private function goodsProps(array $goodsIds)
+    private function goodsProps(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
         $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
         if (!$goodsIds)
+            return [];
+
+        $storeIds = array_unique($storeIds);
+        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        if (!$storeIds)
             return [];
 
         $sql = "SELECT
@@ -428,6 +461,7 @@ FROM
 	z_goods_property_rel_{$this->tableHash} 
 WHERE
 	goods_id IN ( {$goodsIds} ) 
+	AND store_id IN ({$storeIds}) 
 	AND value_id != 0";
 
         return Commons::object2Array($this->getDb()->select($sql));
