@@ -47,7 +47,9 @@ class Es extends BaseTask
                 $dingTalk->formatErrorSendDingTalkMsg($e);
 
                 $this->getLogger($_SERVER['argv'][1])->info($e);
-                return false;
+
+                //  更新MYSQL重新进入kafka消费队列
+                $this->getDb()->table('goods_' . $this->tableHash)->whereIn('id', $saveIds)->update(['modify_time' => time() + 1]);
             }
 
         }
@@ -82,12 +84,24 @@ class Es extends BaseTask
         if ($body) {
             $res = GoodsBase::getDb()->bulk(['body' => $body]);
             if ($res['errors']) {
+                $failedGoodsIds = [];
+
                 foreach ($res['items'] as $item) {
                     foreach ($item as $value) {
                         if (isset($value['error'])) {
                             $this->getLogger($_SERVER['argv'][1])->info(json_encode($item, JSON_UNESCAPED_UNICODE));
+
+                            if (isset($value['_id'])) {
+                                list($storeId, $goodsId) = explode('-', $value['_id']);
+                                $failedGoodsIds[] = $goodsId;
+                            }
                         }
                     }
+                }
+
+                if ($failedGoodsIds) {
+                    //  更新MYSQL重新进入kafka消费队列
+                    $this->getDb()->table('goods_' . $this->tableHash)->whereIn('id', $failedGoodsIds)->update(['modify_time' => time() + 1]);
                 }
             }
         }
@@ -301,7 +315,7 @@ FROM
 	z_goods_tag AS t
 	LEFT JOIN z_goods_tag_rel AS r ON t.id = r.tag_id 
 WHERE
-    r.goods_id in({$goodsIds}) and r.store_id in({$storeIds})";
+    r.store_id in({$storeIds}) and r.goods_id in({$goodsIds})";
 
         return Commons::object2Array($this->getDb()->select($sql));
     }
@@ -330,7 +344,7 @@ FROM
 	z_goods_recommend AS r
 	LEFT JOIN z_goods_recommend_rel AS rr ON r.id = rr.goods_recommend_id 
 WHERE
-	rr.goods_id IN ({$goodsIds}) and rr.store_id in({$storeIds})";
+	rr.store_id in({$storeIds}) AND rr.goods_id IN ({$goodsIds})";
 
         return Commons::object2Array($this->getDb()->select($sql));
     }
@@ -376,7 +390,7 @@ FROM
 	z_goods_category_{$this->tableHash} c
 	LEFT JOIN z_goods_category_rel_{$this->tableHash} r ON c.id = r.category_id 
 WHERE
-	r.goods_id IN({$goodsIds}) and r.store_id in({$storeIds})";
+	r.store_id in({$storeIds}) AND r.goods_id IN({$goodsIds})";
 
         return Commons::object2Array($this->getDb()->select($sql));
     }
@@ -400,8 +414,8 @@ WHERE
 FROM
 	z_image_{$this->tableHash} 
 WHERE
-	goods_id IN ( {$goodsIds} ) 
-	AND store_id IN ( {$storeIds} ) 
+    store_id IN ( {$storeIds} ) 
+	AND goods_id IN ( {$goodsIds} ) 
 	AND category = 'goods' 
 	AND obj_id = 0 
 ORDER BY
@@ -431,8 +445,8 @@ FROM
 	z_goods_sale_prop_{$this->tableHash} a
 	LEFT JOIN z_goods_sale_prop_{$this->tableHash} b ON a.parent_id = b.id 
 WHERE
-	b.goods_id IN ( {$goodsIds} ) 
-	AND b.store_id IN ({$storeIds}) 
+    b.store_id IN ( {$storeIds} ) 
+	AND b.goods_id IN ( {$goodsIds} ) 
 	AND b.multi_image = 1
 ORDER BY
 	a.listorder ASC";
@@ -460,8 +474,8 @@ ORDER BY
 FROM
 	z_goods_property_rel_{$this->tableHash} 
 WHERE
-	goods_id IN ( {$goodsIds} ) 
-	AND store_id IN ({$storeIds}) 
+    store_id IN ({$storeIds}) 
+	AND goods_id IN ( {$goodsIds} ) 
 	AND value_id != 0";
 
         return Commons::object2Array($this->getDb()->select($sql));
