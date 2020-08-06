@@ -56,7 +56,9 @@ class Es extends BaseTask
 
         $body = [];
 
+        $goodsIds = [];
         foreach ($goodsData as $item) {
+            $goodsIds[] = $item['goods_id'];
             $uniqueId = GoodsBase::_id($item['store_id'], $item['goods_id']);
 
             //  删除
@@ -82,27 +84,37 @@ class Es extends BaseTask
         }
 
         if ($body) {
-            $res = GoodsBase::getDb()->bulk(['body' => $body]);
-            if ($res['errors']) {
+            try {
                 $failedGoodsIds = [];
+                $res = GoodsBase::getDb()->bulk(['body' => $body]);
+                if ($res['errors']) {
 
-                foreach ($res['items'] as $item) {
-                    foreach ($item as $value) {
-                        if (isset($value['error'])) {
-                            $this->getLogger($_SERVER['argv'][1])->info(json_encode($item, JSON_UNESCAPED_UNICODE));
+                    foreach ($res['items'] as $item) {
+                        foreach ($item as $value) {
+                            if (isset($value['error'])) {
+                                $this->getLogger($_SERVER['argv'][1])->info(json_encode($item, JSON_UNESCAPED_UNICODE));
 
-                            if (isset($value['_id'])) {
-                                list($storeId, $goodsId) = explode('-', $value['_id']);
-                                $failedGoodsIds[] = $goodsId;
+                                if (isset($value['_id'])) {
+                                    list($storeId, $goodsId) = explode('-', $value['_id']);
+                                    $failedGoodsIds[] = $goodsId;
+                                }
                             }
                         }
                     }
-                }
 
-                if ($failedGoodsIds) {
-                    //  更新MYSQL重新进入kafka消费队列
-                    $this->getDb()->table('goods_' . $this->tableHash)->whereIn('id', $failedGoodsIds)->update(['modify_time' => time() + 1]);
+                    if ($failedGoodsIds)
+                        throw new \Exception('elasticsearch【bulk】数据处理，部分数据处理失败', 500);
+
                 }
+            } catch (\Exception $e) {
+                $e->desc = 'mysql数据同步到ES数据写入失败';
+
+                $dingTalk = new DingTalk(DingTalk::MYSQL_SYNC_TO_ES);
+                $dingTalk->formatErrorSendDingTalkMsg($e);
+
+                $retryGoodsIds = $e->getCode() == 500 ? $failedGoodsIds : $goodsIds;
+                //  更新MYSQL重新进入kafka消费队列
+                $this->getDb()->table('goods_' . $this->tableHash)->whereIn('id', $retryGoodsIds)->update(['modify_time' => time() + 1]);
             }
         }
 
