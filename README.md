@@ -1,8 +1,8 @@
-# binlog监听同步数据到elasticsearch
+# mysql(binlog)监听同步数据到elasticsearch
 
-## 中间件依赖
+## 服务依赖
 
-###### 注意：考虑效率问题，一下中间件最好安装在mysql和elasticsearch的同一个局域网内安装，不然设计网路请求问题会导致性能降低
+###### 注意：考虑效率问题，以下中间件最好安装在mysql和elasticsearch的同一个局域网内安装，否则可能会因为网路请求问题导致性能降低
 
 * 安装java jdk 须大于1.8版本
 

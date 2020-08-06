@@ -2,7 +2,7 @@
 
 return [
     'default' => [
-        'host' => 'es-cn-zz11padcy0003i78s.public.elasticsearch.aliyuncs.com',
+        'host' => '127.0.0.1',
         'port' => '9200',
         'scheme' => 'http',
         'user' => 'elastic',
