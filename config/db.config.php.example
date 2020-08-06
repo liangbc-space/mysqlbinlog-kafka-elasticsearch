@@ -8,10 +8,10 @@ return [
     'connections' => [
 
         'cn01' => [
-            'db_host' => '127.0.0.1',
+            'db_host' => 'mysql',
             'db_port' => '3306',
-            'db_username' => 'root',
-            'db_password' => '123456',
+            'db_username' => 'cn01_db',
+            'db_password' => 'lx#r858zat4bYRX',
             'db_name' => 'cn01_db',
             'table_prefix' => 'z_',
             'charset' => 'utf8',

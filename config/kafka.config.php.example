@@ -2,6 +2,6 @@
 
 
 return [
-    'brokers' => 'centos7:9981',
+    'brokers' => 'kafka:9092',
     'log_level' => LOG_DEBUG,
 ];
