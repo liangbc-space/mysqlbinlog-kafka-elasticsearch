@@ -8,7 +8,7 @@ return [
     'connections' => [
 
         'cn01' => [
-            'db_host' => 'mysql',
+            'db_host' => 'rm-uf6r8e88s3r1q80p5jo.mysql.rds.aliyuncs.com',
             'db_port' => '3306',
             'db_username' => 'cn01_db',
             'db_password' => 'lx#r858zat4bYRX',
