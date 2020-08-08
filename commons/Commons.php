@@ -21,19 +21,71 @@ class Commons
     }
 
 
-    public static function stringToInteger($input)
+    /**
+     *
+     * 数据转int类型   支持字符串、普通数组、多维数组
+     *
+     * @param $input
+     * @return array|int|int[]
+     */
+
+    public static function toInteger($input)
     {
-
-        if (is_string($input) && is_numeric($input)) {
-            $output = intval($input);
-        } elseif (is_array($input)) {
-            $output = array_map(function ($val) {
-                return intval($val);
+        if (is_array($input))
+            return array_map(function ($val) {
+                return self::toInteger($val);
             }, $input);
-        } else
-            $output = $input;
 
-        return $output;
+        if (is_numeric($input) && ceil($input) == $input)
+            return intval($input);
+        else
+            return $input;
+
+    }
+
+
+    /**
+     *
+     * 数据转字符串    支持字符串、普通数组、多维数组
+     *
+     * @param $input
+     * @return array|string|string[]
+     */
+
+    public static function toString($input)
+    {
+        if (is_array($input))
+            return array_map(function ($val) {
+                return self::toString($val);
+            }, $input);
+
+        if (is_numeric($input) || is_string($input) || is_null($input))
+            return strval($input);
+        else
+            return $input;
+
+    }
+
+
+    /**
+     *
+     * 转小数（double）   支持字符串、普通数组、多维数组
+     *
+     * @param $input
+     * @return array|float|float[]
+     */
+
+    public static function toDecimal($input)
+    {
+        if (is_array($input))
+            return array_map(function ($val) {
+                return self::toDecimal($val);
+            }, $input);
+
+        if (is_numeric($input))
+            return doubleval($input);
+        else
+            return $input;
     }
 
 
