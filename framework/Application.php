@@ -2,10 +2,6 @@
 
 namespace framework;
 
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\DriverManager;
 use Illuminate\Database\Capsule\Manager;
 
 defined('APP_PATH') or define('APP_PATH', ROOT_PATH . 'app/');
