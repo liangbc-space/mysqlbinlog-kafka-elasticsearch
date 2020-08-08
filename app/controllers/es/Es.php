@@ -65,7 +65,7 @@ class Es extends BaseTask
             if ($item['operation_type'] == 'DELETE') {
                 $body[] = [
                     'delete' => [
-                        '_index' => GoodsBase::getAlias(),
+                        '_index' => GoodsBase::getIndex(),
                         '_id' => $uniqueId,
                     ]
                 ];
@@ -73,7 +73,7 @@ class Es extends BaseTask
                 if (isset($goodsInfos[$uniqueId]) && $goodsInfo = $goodsInfos[$uniqueId]) {
                     $body[] = [
                         'index' => [
-                            '_index' => GoodsBase::getAlias(),
+                            '_index' => GoodsBase::getIndex(),
                             '_id' => $uniqueId,
                         ]
                     ];
@@ -131,7 +131,7 @@ class Es extends BaseTask
 
             $body[] = [
                 'create' => [
-                    '_index' => GoodsBase::getAlias(),
+                    '_index' => GoodsBase::getIndex(),
                     '_id' => $goodsInfo['uniqueeid'],
                 ]
             ];
@@ -271,6 +271,13 @@ class Es extends BaseTask
                 }
             }
 
+            //  构建search_keywords分词检索字段
+            $tagNames = isset($goods['tag_names']) && $goods['tag_names'] ? $goods['tag_names'] : [];
+
+            $goods['search_keywords'][] = $goods['base_name'];
+            $goods['search_keywords'][] = $goods['codeno'];
+            $goods['search_keywords'] = array_merge($goods['search_keywords'], $tagNames);
+
         }
 
         return $goodsInfos;
@@ -281,7 +288,7 @@ class Es extends BaseTask
     {
 
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
@@ -309,12 +316,12 @@ WHERE
     private function goodsTags(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
         $storeIds = array_unique($storeIds);
-        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        $storeIds = implode(',', Commons::toInteger($storeIds));
         if (!$storeIds)
             return [];
 
@@ -336,12 +343,12 @@ WHERE
     private function goodsRecommends(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
         $storeIds = array_unique($storeIds);
-        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        $storeIds = implode(',', Commons::toInteger($storeIds));
         if (!$storeIds)
             return [];
 
@@ -365,7 +372,7 @@ WHERE
     private function goodsCategories($categoryIds)
     {
         $categoryIds = array_unique($categoryIds);
-        $categoryIds = implode(',', Commons::stringToInteger($categoryIds));
+        $categoryIds = implode(',', Commons::toInteger($categoryIds));
         if (!$categoryIds)
             return [];
 
@@ -385,12 +392,12 @@ WHERE
     private function goodsCategoriesRel(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
         $storeIds = array_unique($storeIds);
-        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        $storeIds = implode(',', Commons::toInteger($storeIds));
         if (!$storeIds)
             return [];
 
@@ -411,12 +418,12 @@ WHERE
     private function goodsOtherImages(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
         $storeIds = array_unique($storeIds);
-        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        $storeIds = implode(',', Commons::toInteger($storeIds));
         if (!$storeIds)
             return [];
 
@@ -440,12 +447,12 @@ ORDER BY
     private function goodsSaleProp(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
         $storeIds = array_unique($storeIds);
-        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        $storeIds = implode(',', Commons::toInteger($storeIds));
         if (!$storeIds)
             return [];
 
@@ -469,12 +476,12 @@ ORDER BY
     private function goodsProps(array $goodsIds, array $storeIds)
     {
         $goodsIds = array_unique($goodsIds);
-        $goodsIds = implode(',', Commons::stringToInteger($goodsIds));
+        $goodsIds = implode(',', Commons::toInteger($goodsIds));
         if (!$goodsIds)
             return [];
 
         $storeIds = array_unique($storeIds);
-        $storeIds = implode(',', Commons::stringToInteger($storeIds));
+        $storeIds = implode(',', Commons::toInteger($storeIds));
         if (!$storeIds)
             return [];
 

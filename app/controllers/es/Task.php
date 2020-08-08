@@ -176,7 +176,7 @@ class Task extends BaseTask
                 $sql = "SELECT id FROM {$tableName} WHERE store_id > 0 ORDER BY id ASC LIMIT {$offset},{$psize}";
                 if ($ids = $this->getDb()->select($sql)) {
                     $ids = Commons::object2Array($ids);
-                    $ids = Commons::stringToInteger(array_column($ids, 'id'));
+                    $ids = Commons::toInteger(array_column($ids, 'id'));
 
                     //  获取es中是否已经存在数据
                     $body = [
