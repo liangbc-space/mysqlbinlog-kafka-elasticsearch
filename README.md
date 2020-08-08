@@ -74,7 +74,7 @@
 
 2.本项目须严格遵循`psr4`规范以保证项目文件的正常加载
 
-3.建议采用`composer`进行管理包,已经内置了elasticsearch、mysql、kafka等包，**其中kafka包为自行开发，如存在问题请反馈**
+3.建议采用`composer`进行管理包,已经内置了elasticsearch、mysql、kafka等包，`其中kafka包为自行开发，如存在问题请反馈`
 
 
 
