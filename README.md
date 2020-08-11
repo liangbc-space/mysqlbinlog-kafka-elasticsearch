@@ -74,7 +74,7 @@
 
 2.本项目须严格遵循`psr4`规范以保证项目文件的正常加载
 
-3.建议采用`composer`进行管理包,已经内置了elasticsearch、mysql、kafka等包，`其中kafka包为自行开发，如存在问题请反馈`
+3.建议采用`composer`进行包管理,已经内置了elasticsearch、mysql、kafka等包，`其中kafka包为自行开发，如存在问题请反馈`
 
 
 
@@ -99,7 +99,13 @@
 
 ### 运行脚本
 
-####### 脚本采用命名空间的方式加载，支持参数传递
+####### 脚本采用命名空间的方式加载，支持多参数传递
+
+1.composer install安装相应的包
+
+2.配置初始化，为了开发环境和正式环境的配置互不干扰，所以本项目配置代码管理中仅提供了配置事例`xxx.config.php.example`；拷贝example事例并重命名为`xxx.config.php`，然后做相应的配置修改
+
+3.运行业务脚本
 
 ```
     如：  php cmd es/task/run -batchNum=100       执行mysql-binlog监控同步数据到elasticsearch的脚本

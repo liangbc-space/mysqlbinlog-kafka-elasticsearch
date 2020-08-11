@@ -204,10 +204,12 @@ class Task extends BaseTask
                     $existsIds = array_column($hits, 'id');
 
                     if ($insertIds = array_diff($ids, $existsIds)) {
+                        $timestamp = Commons::getMsecTimestamp();
+
                         $es = new Es($tableHash);
                         $es->migrate($insertIds);
 
-                        echo "成功插入" . count($insertIds) . "条数据" . PHP_EOL;
+                        echo '成功插入' . count($insertIds) . '条数据耗时【' . (Commons::getMsecTimestamp() - $timestamp) . '】毫秒' . PHP_EOL;
                     } else {
                         echo "暂无数据需要插入" . PHP_EOL;
                     }
@@ -255,7 +257,6 @@ class Task extends BaseTask
             }
 
             if ($message->err || count($goodsData) >= $this->kafkaConsumeBatchNum) {
-                $st = Commons::getMsecTimestamp();
                 $this->toEs($tableHash, $goodsData);
 
             }
