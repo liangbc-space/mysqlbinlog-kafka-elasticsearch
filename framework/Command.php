@@ -23,6 +23,14 @@ class Command
     }
 
 
+    /**
+     *
+     * fork多个进程
+     *
+     * @param $pcntlNum
+     * @param callable $callable    function($pid, $index){}
+     */
+
     protected function pcntlLoop($pcntlNum, callable $callable)
     {
         if (!extension_loaded('pcntl')) {
