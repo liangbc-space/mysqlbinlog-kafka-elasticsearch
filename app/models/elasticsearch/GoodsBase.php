@@ -9,7 +9,7 @@ use framework\elasticsearch\ElasticsearchModel;
 class GoodsBase extends ElasticsearchModel
 {
 
-    protected static $index = 'ymcart_goods_base_reindex_01';
+    protected static $index = 'goods_base_test';
 
     protected static $alias = 'alias_goods_base';
 

@@ -39,7 +39,7 @@ class Es extends BaseTask
             //  获取需要保存的商品数据
             try {
                 $goodsInfos = $this->getGoodsInfos($saveIds);
-                $goodsInfos = array_combine(array_column($goodsInfos, 'uniqueeid'), $goodsInfos);
+                $goodsInfos = array_combine(array_column($goodsInfos, 'unique_id'), $goodsInfos);
             } catch (\Exception $e) {
                 $e->desc = 'mysql数据同步到ES数据组装异常';
 
@@ -132,7 +132,7 @@ class Es extends BaseTask
             $body[] = [
                 'create' => [
                     '_index' => GoodsBase::getIndex(),
-                    '_id' => $goodsInfo['uniqueeid'],
+                    '_id' => $goodsInfo['unique_id'],
                 ]
             ];
 
@@ -197,7 +197,7 @@ class Es extends BaseTask
         foreach ($goodsInfos as $key => &$goods) {
             $goods['mysql_table_name'] = 'z_goods_' . $this->tableHash;
 
-            if (isset($goods['user_group_id_values'])) {
+            if ($goods['user_group_id_values']) {
                 $userGroupIdValues = explode(',', trim($goods['user_group_id_values'], ','));
                 $goods['user_group_ids'] = array_unique($userGroupIdValues);
 
@@ -265,9 +265,6 @@ class Es extends BaseTask
             foreach ($props as $prop) {
                 if ($goodsId == $prop['goods_id']) {
                     $goods['property_ids'][] = $prop['value_id'];
-
-                    $goods['prop_ids_' . $prop['property_id']][] = intval($prop['value_id']);
-                    $goods['prop_names_' . $prop['property_id']][] = $prop['value_name'];
                 }
             }
 
@@ -294,7 +291,7 @@ class Es extends BaseTask
 
         $sql = "
 SELECT
-	CONCAT( CAST( g.store_id AS CHAR ), '-', CAST( g.id AS CHAR ) ) AS uniqueeid,
+	CONCAT( CAST( g.store_id AS CHAR ), '-', CAST( g.id AS CHAR ) ) AS unique_id,
 	g.*,
 IF
 	( g.stock_nums > 0, 1, IF ( g.is_bookable, 1, 0 ) ) AS is_instock,

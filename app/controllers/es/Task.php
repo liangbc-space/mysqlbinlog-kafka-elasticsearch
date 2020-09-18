@@ -155,7 +155,7 @@ class Task extends BaseTask
                             ]
                         ]
                     ];
-                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getAlias(), 'body' => $body]);
+                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getIndex(), 'body' => $body]);
                     $hits = array_column($result['hits']['hits'], '_source');
                     $existsIds = array_column($hits, 'id');
 
