@@ -28,57 +28,8 @@ class Task extends BaseTask
     /** @var KafkaConsumer|null $offsetCommitInstance */
     private $offsetCommitInstance = null;
 
-
-    public function test()
-    {
-        $psize = 1000;
-        $page = 1;
-        while (true) {
-            $offset = ($page++ - 1) * $psize;
-            $ids = $this->getDb()->table('goods_00')->select(['id'])
-                ->where('store_id', '>', 0)
-                ->orderBy('id', 'asc')->offset($offset)->limit($psize)
-                ->pluck('id')->toArray();
-
-            if (!$ids)
-                break;
-
-            //  获取es中是否已经存在数据
-            $body = [
-                'size' => $psize,
-                '_source' => ['id'],
-                'query' => [
-                    'bool' => [
-                        'filter' => [
-                            [
-                                'terms' => [
-                                    'id' => $ids
-                                ],
-                            ],
-                            [
-                                'term' => [
-                                    'mysql_table_name' => 'z_goods_00'
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ];
-            $result = GoodsBase::getDb()->search(['index' => GoodsBase::getAlias(), 'body' => $body]);
-            $hits = array_column($result['hits']['hits'], '_source');
-            $esIds = array_column($hits, 'id');
-
-            if ($diffIds = array_diff($ids, $esIds)) {
-                echo '【es中不存在的商品ID】：' . json_encode($diffIds, true) . PHP_EOL;
-            }
-
-            if ($diffIds = array_diff($esIds, $ids)) {
-                echo '【mysql中不存在的商品ID】：' . json_encode($diffIds, true) . PHP_EOL;
-            }
-
-
-        }
-    }
+    /** @var array $defaultSignalHandler 信号量处理器 */
+    private $defaultSignalHandler = [SIGINT, SIGTERM, SIGQUIT];
 
 
     /**
@@ -99,6 +50,11 @@ class Task extends BaseTask
         if ($batchNum <= 0)
             exit('批量条数必须是正整数' . PHP_EOL);
         $this->kafkaConsumeBatchNum = $batchNum;
+
+        //  注册信号
+        foreach ($this->defaultSignalHandler as $signal) {
+            pcntl_signal($signal, [$this, 'registerSignalHandler']);
+        }
 
         //  设置进程名称
         cli_set_process_title('task-mysql-binlog-canal-toEs');
@@ -199,7 +155,7 @@ class Task extends BaseTask
                             ]
                         ]
                     ];
-                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getAlias(), 'body' => $body]);
+                    $result = GoodsBase::getDb()->search(['index' => GoodsBase::getIndex(), 'body' => $body]);
                     $hits = array_column($result['hits']['hits'], '_source');
                     $existsIds = array_column($hits, 'id');
 
@@ -239,6 +195,8 @@ class Task extends BaseTask
 
         $goodsData = [];
         $consumer->consumer($topicNames, function (Message $message, KafkaConsumer $instance) use (&$goodsData, $tableHash, $logger) {
+            pcntl_signal_dispatch();
+            pcntl_sigprocmask(SIG_BLOCK, $this->defaultSignalHandler, $oldset);
 
             if (!$message->err) {
                 $this->offsetCommitInstance = $instance;
@@ -259,6 +217,7 @@ class Task extends BaseTask
             if ($message->err || count($goodsData) >= $this->kafkaConsumeBatchNum) {
                 $this->toEs($tableHash, $goodsData);
 
+                pcntl_sigprocmask(SIG_UNBLOCK, $this->defaultSignalHandler, $oldset);
             }
 
         });
@@ -344,6 +303,25 @@ class Task extends BaseTask
         }
 
         return $topNames;
+
+    }
+
+
+    public function registerSignalHandler($signal)
+    {
+        switch ($signal) {
+            case SIGTERM:
+                echo "【" . posix_getppid() . " ---> " . posix_getpid() . "】捕获到了 SIGTERM 信号" . PHP_EOL;
+                exit(0);
+            case SIGQUIT:
+                echo "【" . posix_getppid() . " ---> " . posix_getpid() . "】捕获到了 SIGQUIT 信号" . PHP_EOL;
+                exit(0);
+            case SIGINT:
+                echo "【" . posix_getppid() . " ---> " . posix_getpid() . "】捕获到了 SIGINT 信号" . PHP_EOL;
+                exit(0);
+            default:
+                break;
+        }
 
     }
 

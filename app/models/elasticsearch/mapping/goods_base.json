@@ -6,7 +6,7 @@
         "index.mapping.total_fields.limit":5000
     },
     "aliases":{
-        "alias_goods_base":{
+        "alias_goods_base_test":{
 
         }
     },
@@ -16,12 +16,12 @@
         },
         "properties":{
             "id":{
-                "type":"integer"
+                "type":"keyword"
             },
             "store_id":{
-                "type":"integer"
+                "type":"keyword"
             },
-            "uniqueeid":{
+            "unique_id":{
                 "type":"keyword"
             },
             "mysql_table_name":{
