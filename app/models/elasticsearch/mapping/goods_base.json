@@ -1,56 +1,36 @@
 {
-    "settings":{
-        "max_result_window":50000000,
-        "number_of_shards":2,
-        "number_of_replicas":1,
-        "index.mapping.total_fields.limit":5000
-    },
     "aliases":{
-        "alias_goods_base_test":{
+        "alias_goods_base-test":{
 
         }
     },
     "mappings":{
-        "_source":{
-            "enabled":true
-        },
         "properties":{
-            "id":{
-                "type":"keyword"
-            },
-            "store_id":{
-                "type":"keyword"
-            },
-            "unique_id":{
-                "type":"keyword"
-            },
-            "mysql_table_name":{
+            "b2b_status":{
                 "type":"keyword"
             },
             "base_name":{
-                "type":"text",
-                "analyzer":"ik_max_word",
-                "search_analyzer":"ik_smart"
-            },
-            "search_keywords":{
-                "type":"text",
-                "analyzer":"ik_max_word",
-                "search_analyzer":"ik_smart"
-            },
-            "brand_id":{
-                "type":"integer"
-            },
-            "goods_type_id":{
-                "type":"integer"
-            },
-            "category_path":{
                 "type":"keyword"
             },
-            "category_id":{
+            "brand_id":{
+                "type":"keyword"
+            },
+            "brand_name":{
+                "type":"keyword",
+                "fields":{
+                    "keyword":{
+                        "type":"keyword"
+                    }
+                }
+            },
+            "buy_counts":{
                 "type":"integer"
             },
+            "category_id":{
+                "type":"keyword"
+            },
             "category_ids":{
-                "type":"integer"
+                "type":"keyword"
             },
             "category_name":{
                 "type":"keyword"
@@ -58,50 +38,18 @@
             "category_names":{
                 "type":"keyword"
             },
+            "category_path":{
+                "type":"keyword"
+            },
             "codeno":{
-                "type":"keyword"
-            },
-            "image":{
-                "type":"keyword"
-            },
-            "price":{
-                "type":"double"
-            },
-            "cost_price":{
-                "type":"double"
-            },
-            "market_price":{
-                "type":"double"
-            },
-            "listorder":{
-                "type":"integer"
-            },
-            "status":{
-                "type":"short"
-            },
-            "up_time":{
-                "type":"long"
-            },
-            "down_time":{
-                "type":"long"
-            },
-            "create_time":{
-                "type":"long"
-            },
-            "modify_time":{
-                "type":"long"
-            },
-            "template_page":{
-                "type":"keyword"
-            },
-            "visit_counts":{
-                "type":"integer"
-            },
-            "buy_counts":{
-                "type":"integer"
-            },
-            "wishlist_counts":{
-                "type":"integer"
+                "type":"keyword",
+                "fields":{
+                    "text":{
+                        "type":"text",
+                        "analyzer":"ngram_analyzer"
+                    }
+                },
+                "normalizer":"my_normalizer"
             },
             "comment_counts":{
                 "type":"integer"
@@ -109,50 +57,80 @@
             "comment_value":{
                 "type":"integer"
             },
-            "stock_nums":{
-                "type":"integer"
-            },
-            "sale_mode":{
-                "type":"short"
-            },
-            "spec_mode":{
-                "type":"short"
-            },
-            "is_diy_remark":{
-                "type":"short"
-            },
-            "weight":{
+            "cost_price":{
                 "type":"double"
             },
-            "start_time":{
+            "create_day":{
+                "type":"date",
+                "format":"yyyyMMdd||epoch_millis"
+            },
+            "create_time":{
+                "type":"long"
+            },
+            "descript":{
+                "type":"keyword"
+            },
+            "discount":{
+                "type":"double"
+            },
+            "down_time":{
                 "type":"long"
             },
             "end_time":{
                 "type":"long"
             },
+            "goods_type_id":{
+                "type":"keyword"
+            },
+            "group_codeno":{
+                "type":"keyword"
+            },
+            "id":{
+                "type":"keyword",
+                "fields":{
+                    "long":{
+                        "type":"long"
+                    }
+                }
+            },
+            "image":{
+                "type":"keyword"
+            },
+            "images_other":{
+                "type":"keyword"
+            },
+            "is_bookable":{
+                "type":"byte"
+            },
+            "is_diy_remark":{
+                "type":"byte"
+            },
             "is_free_shipping":{
-                "type":"short"
+                "type":"keyword"
             },
-            "special_offer_id":{
-                "type":"integer"
-            },
-            "discount":{
-                "type":"double"
-            },
-            "title":{
+            "is_instock":{
                 "type":"keyword"
             },
             "keywords":{
                 "type":"keyword"
             },
-            "descript":{
+            "listorder":{
+                "type":"integer"
+            },
+            "main_prop_image":{
                 "type":"keyword"
+            },
+            "main_prop_name":{
+                "type":"keyword"
+            },
+            "market_price":{
+                "type":"double"
             },
             "mini_detail":{
                 "type":"keyword"
             },
-            "group_codeno":{
-                "type":"keyword"
+            "modify_time":{
+                "type":"long"
             },
             "moq":{
                 "type":"integer"
@@ -160,68 +138,149 @@
             "mxoq":{
                 "type":"integer"
             },
-            "is_bookable":{
-                "type":"short"
+            "mysql_table_name":{
+                "type":"keyword"
             },
-            "b2b_status":{
-                "type":"short"
+            "price":{
+                "type":"double"
             },
-            "user_group_ids":{
+            "property_ids":{
+                "type":"keyword"
+            },
+            "rec_ids":{
+                "type":"keyword"
+            },
+            "rec_names":{
+                "type":"keyword"
+            },
+            "sale_mode":{
+                "type":"keyword"
+            },
+            "search_keywords":{
+                "type":"text",
+                "fields":{
+                    "other_languge":{
+                        "type":"text"
+                    }
+                },
+                "analyzer":"ik_max_word",
+                "search_analyzer":"ik_smart"
+            },
+            "sku_codeno":{
+                "type":"keyword",
+                "fields":{
+                    "text":{
+                        "type":"text",
+                        "analyzer":"ngram_analyzer"
+                    }
+                },
+                "normalizer":"my_normalizer"
+            },
+            "spec_mode":{
+                "type":"keyword"
+            },
+            "start_time":{
+                "type":"long"
+            },
+            "status":{
+                "type":"keyword",
+                "fields":{
+                    "byte":{
+                        "type":"byte"
+                    }
+                }
+            },
+            "stock_nums":{
                 "type":"integer"
+            },
+            "store_id":{
+                "type":"keyword"
+            },
+            "supplier_remark":{
+                "type":"keyword"
+            },
+            "tag_ids":{
+                "type":"keyword"
+            },
+            "tag_names":{
+                "type":"keyword"
+            },
+            "template_page":{
+                "type":"keyword"
+            },
+            "title":{
+                "type":"keyword"
+            },
+            "up_time":{
+                "type":"long"
             },
             "user_group_id_values":{
                 "type":"keyword"
             },
-            "volume":{
-                "type":"double"
-            },
-            "supplier_remark":{
+            "user_group_ids":{
                 "type":"keyword"
             },
             "video":{
                 "type":"keyword"
             },
-            "is_instock":{
-                "type":"short"
+            "visit_counts":{
+                "type":"integer"
             },
-            "create_day":{
-                "type":"date",
-                "format":"yyyyMMdd||epoch_millis"
+            "volume":{
+                "type":"double"
             },
-            "brand_name":{
-                "type":"text",
-                "analyzer":"ik_max_word",
-                "search_analyzer":"ik_smart",
-                "fields":{
-                    "keyword":{
-                        "type":"keyword"
+            "weight":{
+                "type":"double"
+            },
+            "wishlist_counts":{
+                "type":"integer"
+            }
+        }
+    },
+    "settings":{
+        "index":{
+            "mapping":{
+                "total_fields":{
+                    "limit":"5000"
+                }
+            },
+            "number_of_shards":"2",
+            "max_result_window":"100000000",
+            "analysis":{
+                "normalizer":{
+                    "my_normalizer":{
+                        "filter":[
+                            "lowercase",
+                            "asciifolding"
+                        ],
+                        "type":"custom",
+                        "char_filter":[
+
+                        ]
+                    }
+                },
+                "analyzer":{
+                    "ngram_analyzer":{
+                        "tokenizer":"ngram_tokenizer",
+                        "filter":[
+                            "lowercase",
+                            "asciifolding"
+                        ]
+                    }
+                },
+                "tokenizer":{
+                    "ngram_tokenizer":{
+                        "token_chars":[
+
+                        ],
+                        "min_gram":"1",
+                        "type":"ngram",
+                        "max_gram":"30"
                     }
                 }
             },
-            "tag_ids":{
-                "type":"integer"
-            },
-            "tag_names":{
-                "type":"keyword"
-            },
-            "rec_ids":{
-                "type":"integer"
-            },
-            "rec_names":{
-                "type":"keyword"
-            },
-            "images_other":{
-                "type":"keyword"
-            },
-            "main_prop_name":{
-                "type":"keyword"
-            },
-            "main_prop_image":{
-                "type":"keyword"
-            },
-            "property_ids":{
-                "type":"integer"
-            }
+            "number_of_replicas":"1",
+            "max_ngram_diff":30
         }
     }
 }
