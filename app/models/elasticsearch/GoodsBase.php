@@ -11,7 +11,7 @@ class GoodsBase extends ElasticsearchModel
 
     protected static $index = 'goods_base_test';
 
-    protected static $alias = 'alias_goods_base';
+    protected static $alias = 'alias_goods_base-test';
 
 
     public static function getIndex()
